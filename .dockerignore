@@ -1,0 +1,48 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Build outputs
+dist
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Test files
+coverage
+test
+*.spec.ts
+*.e2e-spec.ts
+jest.config.js
+
+# Documentation
+README.md
+docs
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Misc
+.eslintrc.js
+.prettierrc
+
+# Prisma migrations (keep schema)
+prisma/migrations
+
+# Logs
+*.log
+logs

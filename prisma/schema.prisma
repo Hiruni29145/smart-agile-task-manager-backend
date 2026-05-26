@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum DeviceType {
+  DESKTOP
+  MOBILE
+  TABLET
+  UNKNOWN
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  firstName String     @map("first_name")
+  lastName  String     @map("last_name")
+  phone     String?
+  avatar    String?
+  role      UserRole   @default(USER)
+  status    UserStatus @default(ACTIVE)
+
+  // Security fields
+  passwordResetToken  String?   @map("password_reset_token")
+  passwordResetExpiry DateTime? @map("password_reset_expiry")
+  lastLoginAt         DateTime? @map("last_login_at")
+  loginAttempts       Int       @default(0) @map("login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+
+  // Audit fields
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relations
+  auditLogs     AuditLog[]
+  sessions      UserSession[]
+  notifications Notification[]
+
+  @@index([email])
+  @@index([email, status])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([passwordResetToken])
+  @@index([role, status])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model UserSession {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+
+  // Token (hashed)
+  refreshTokenHash String @map("refresh_token_hash")
+
+  // Device information
+  deviceName String?    @map("device_name")
+  deviceType DeviceType @default(UNKNOWN) @map("device_type")
+  browser    String?
+  os         String?
+
+  // Security tracking
+  ipAddress String @map("ip_address")
+  userAgent String @map("user_agent")
+
+  // Session management
+  lastActivityAt DateTime @default(now()) @map("last_activity_at")
+  expiresAt      DateTime @map("expires_at")
+  isActive       Boolean  @default(true) @map("is_active")
+
+  // Audit
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, expiresAt])
+  @@index([userId, isActive])
+  @@index([refreshTokenHash])
+  @@index([lastActivityAt])
+  @@index([expiresAt])
+  @@map("user_sessions")
+}
+
+model AuditLog {
+  id        BigInt    @id @default(autoincrement())
+  userId    String?   @map("user_id")
+  action    String
+  entity    String
+  entityId  String?   @map("entity_id")
+  oldValue  Json?     @map("old_value")
+  newValue  Json?     @map("new_value")
+  ipAddress String?   @map("ip_address")
+  userAgent String?   @map("user_agent")
+  createdAt DateTime  @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ===========================================
+// Notifications
+// ===========================================
+
+enum NotificationType {
+  AUTH
+  SYSTEM
+  USER
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+model Notification {
+  id         Int              @id @default(autoincrement())
+  userId     String           @map("user_id")
+  title      String
+  message    String
+  type       NotificationType
+  actionUrl  String?          @map("action_url")
+  isRead     Boolean          @default(false) @map("is_read")
+  isFavorite Boolean          @default(false) @map("is_favorite")
+
+  // Timestamps
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([userId, isFavorite])
+  @@index([userId, deletedAt])
+  @@map("notifications")
+}

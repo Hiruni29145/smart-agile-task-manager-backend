@@ -1,0 +1,26 @@
+{{#> main}}
+<h2
+    style="margin: 0 0 20px 0; font-family: sans-serif; font-size: 20px; line-height: 28px; color: #1a1a1a; font-weight: bold;">
+    New Support Inquiry
+</h2>
+
+<p style="margin: 0 0 20px 0; font-family: sans-serif; font-size: 16px; line-height: 24px; color: #4a4a4a;">
+    You have received a new support inquiry from the website contact form.
+</p>
+
+<div style="background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #e9ecef; margin-bottom: 20px;">
+    <span style="font-weight: bold; color: #555; display: block; margin-bottom: 5px;">From:</span>
+    <div style="color: #333; white-space: pre-wrap;">{{userName}}</div>
+    <div style="color: #333; white-space: pre-wrap;">{{email}}</div>
+</div>
+
+<div style="background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #e9ecef;">
+    <span style="font-weight: bold; color: #555; display: block; margin-bottom: 5px;">Message:</span>
+    <div style="color: #333; white-space: pre-wrap;">{{message}}</div>
+</div>
+
+<p style="margin-top: 30px; font-size: 14px; color: #666; font-family: sans-serif; line-height: 24px;">
+    Please reply directly to this email to contact the user at <a href="mailto:{{email}}"
+        style="color: #0077be; text-decoration: none;">{{email}}</a>.
+</p>
+{{/main}}
