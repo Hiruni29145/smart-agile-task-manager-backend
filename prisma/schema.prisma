@@ -9,9 +9,8 @@ datasource db {
 }
 
 enum UserRole {
-  USER
+  DEVELOPER
   ADMIN
-  MODERATOR
   SUPER_ADMIN
 }
 
@@ -36,7 +35,7 @@ model User {
   lastName  String     @map("last_name")
   phone     String?
   avatar    String?
-  role      UserRole   @default(USER)
+  role      UserRole   @default(DEVELOPER)
   status    UserStatus @default(ACTIVE)
 
   // Security fields

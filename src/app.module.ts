@@ -14,7 +14,6 @@ import { EmailModule } from './modules/email';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AdminModule } from './modules/admin/admin.module';
-import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { JwtAuthGuard } from './common/guards';
 import { appConfig, jwtConfig, throttleConfig, supabaseConfig, cacheConfig, loggerConfig, validateEnv, } from './config';
 
@@ -138,7 +137,6 @@ import { appConfig, jwtConfig, throttleConfig, supabaseConfig, cacheConfig, logg
     NotificationsModule,
     AuditModule,
     AdminModule,
-    DashboardModule,
   ],
   
   providers: [
