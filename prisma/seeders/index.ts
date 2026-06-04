@@ -18,9 +18,6 @@ import { superAdminSeeder } from './super-admin.seeder';
 export const seeders: Seeder[] = [
     superAdminSeeder,
     // Add more seeders here as needed:
-    // tourSeeder,
-    // categorySeeder,
-    // etc.
 ];
 
 export type { Seeder, SeederResult } from './seeder.interface';

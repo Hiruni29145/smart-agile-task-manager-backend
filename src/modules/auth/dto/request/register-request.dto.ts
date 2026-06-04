@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MinLength, } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MinLength, IsEnum } from 'class-validator';
+import { UserRole } from '@prisma/client';
 
 export class RegisterRequestDto {
     @IsEmail({}, { message: 'Please provide a valid email address' })
@@ -27,4 +28,8 @@ export class RegisterRequestDto {
     @IsOptional()
     @IsString()
     phone?: string;
+
+    @IsEnum(UserRole, { message: 'Role must be a valid UserRole (e.g., DEVELOPER, ADMIN)' })
+    @IsNotEmpty({ message: 'Role is required' })
+    role!: UserRole;
 }

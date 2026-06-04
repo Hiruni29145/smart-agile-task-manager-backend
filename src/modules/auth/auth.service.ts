@@ -33,7 +33,7 @@ export class AuthService {
     ) { }
 
     async register(registerDto: RegisterRequestDto, deviceInfo: DeviceInfo): Promise<RegisterResponseDto> {
-        const { email, password, firstName, lastName, phone } = registerDto;
+        const { email, password, firstName, lastName, phone, role } = registerDto;
 
         const existingUser = await this.prisma.user.findUnique({
             where: { email: email.toLowerCase() },
@@ -58,6 +58,7 @@ export class AuthService {
                 firstName,
                 lastName,
                 phone,
+                role,
             },
         });
 
