@@ -24,7 +24,7 @@ export class EmailService {
     }
 
     private async getBrandingContext(): Promise<Record<string, any>> {
-        return { companyName: 'Tourism App' };
+        return { companyName: 'Smart Agile System' };
     }
 
     async sendPasswordResetEmail(
@@ -42,14 +42,14 @@ export class EmailService {
         const jobData: EmailJobData = {
             type: 'password-reset',
             to: email,
-            subject: 'Reset Your Password - Tourism App',
+            subject: 'Reset Your Password - Smart Agile System',
             template: 'password-reset',
             context: {
                 firstName: firstName || 'User',
                 resetUrl,
                 expiryMinutes,
                 year: new Date().getFullYear(),
-                subject: 'Reset Your Password - Tourism App',
+                subject: 'Reset Your Password - Smart Agile System',
                 ...branding,
             },
         };
@@ -66,7 +66,7 @@ export class EmailService {
         const jobData: EmailJobData = {
             type: 'welcome',
             to: email,
-            subject: 'Welcome to Tourism App!',
+            subject: 'Welcome to Smart Agile System!',
             template: 'welcome',
             context: {
                 firstName,
@@ -88,13 +88,13 @@ export class EmailService {
         const jobData: EmailJobData = {
             type: 'password-changed',
             to: email,
-            subject: 'Your Password Was Changed - Tourism App',
+            subject: 'Your Password Was Changed - Smart Agile System',
             template: 'password-changed',
             context: {
                 firstName: firstName || 'User',
                 supportEmail: this.configService.get<string>(
                     'SUPPORT_EMAIL',
-                    'support@tourism.com',
+                    'support@gmail.com',
                 ),
                 year: new Date().getFullYear(),
                 ...branding,
@@ -113,7 +113,7 @@ export class EmailService {
         const branding = await this.getBrandingContext();
         const supportEmail = this.configService.get<string>(
             'SUPPORT_EMAIL',
-            'yarnixlabs@gmail.com',
+            'support@gmail.com',
         );
 
         const jobData: EmailJobData = {

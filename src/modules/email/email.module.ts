@@ -50,7 +50,7 @@ import { EmailProcessor } from './email.processor';
                     defaults: {
                         from: configService.get<string>(
                             'SMTP_FROM',
-                            '"Tourism App" <noreply@tourism.com>',
+                            '"Smart Agile System" <noreplynoreply@smartagile.com>',
                         ),
                     },
                     template: {
