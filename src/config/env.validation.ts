@@ -41,10 +41,6 @@ export const envSchema = z.object({
   // Logging
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
 
-  // Google Analytics
-  GOOGLE_ANALYTICS_PROPERTY_ID: z.string().min(1, 'GOOGLE_ANALYTICS_PROPERTY_ID is required'),
-  GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1, 'GOOGLE_APPLICATION_CREDENTIALS is required'),
-
   // Email
   SUPPORT_EMAIL: z.string().email().default('yarnixlabs@gmail.com'),
 
