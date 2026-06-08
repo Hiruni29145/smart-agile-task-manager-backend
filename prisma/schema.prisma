@@ -54,6 +54,7 @@ model User {
   auditLogs     AuditLog[]
   sessions      UserSession[]
   notifications Notification[]
+  projects      Project[]
 
   @@index([email])
   @@index([email, status])
@@ -163,4 +164,37 @@ model Notification {
   @@index([userId, isFavorite])
   @@index([userId, deletedAt])
   @@map("notifications")
+}
+
+// ===========================================
+// Projects
+// ===========================================
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+model Project {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?       @db.Text
+  key         String        @unique
+  status      ProjectStatus @default(ACTIVE)
+  deadline    DateTime?
+
+  // Relations
+  createdById String @map("created_by_id")
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  // Timestamps
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([createdById])
+  @@index([status])
+  @@index([key])
+  @@map("projects")
 }
