@@ -33,6 +33,7 @@ export const ErrorCodes = {
     DATABASE_ERROR: 'SYS002',
     RATE_LIMIT_EXCEEDED: 'SYS003',
     FORBIDDEN: 'SYS004',
+    RESOURCE_NOT_FOUND: 'SYS005',
 } as const;
 
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
