@@ -32,4 +32,8 @@ export class RegisterRequestDto {
     @IsEnum(UserRole, { message: 'Role must be a valid UserRole (e.g., DEVELOPER, ADMIN)' })
     @IsNotEmpty({ message: 'Role is required' })
     role!: UserRole;
+
+    @IsOptional()
+    @IsString()
+    jobDescription?: string;
 }

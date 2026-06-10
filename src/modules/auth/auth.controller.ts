@@ -4,13 +4,14 @@ import * as express from 'express';
 import { AuthService } from './auth.service';
 import { SessionService } from './session.service';
 import { RegisterRequestDto, LoginRequestDto, RefreshTokenRequestDto, ForgotPasswordRequestDto, ResetPasswordRequestDto, ChangePasswordRequestDto, UpdateProfileRequestDto } from './dto/request';
-import { LoginResponseDto, RegisterResponseDto, UserResponseDto, TokensResponseDto, SessionsListResponseDto, } from './dto/response';
+import { LoginResponseDto, UserResponseDto, TokensResponseDto, SessionsListResponseDto, } from './dto/response';
 import { SuccessResponseDto } from '../../common/dto';
-import { Public, CurrentUser } from '../../common/decorators';
-import { JwtRefreshGuard } from '../../common/guards';
+import { Public, CurrentUser, Roles } from '../../common/decorators';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { JwtRefreshGuard, RolesGuard } from '../../common/guards';
+import { UserRole } from '../../common/enums/user-role.enum';
 import type { AuthenticatedUser } from '../../common/interfaces';
 import { extractDeviceInfo } from '../../common/utils';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -19,14 +20,13 @@ export class AuthController {
         private readonly sessionService: SessionService,
     ) { }
 
-    @Public()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
     @Post('register')
     async register(
         @Body() registerDto: RegisterRequestDto,
-        @Req() req: express.Request,
-    ): Promise<RegisterResponseDto> {
-        const deviceInfo = extractDeviceInfo(req);
-        return this.authService.register(registerDto, deviceInfo);
+    ): Promise<SuccessResponseDto> {
+        return this.authService.register(registerDto);
     }
 
     @Public()

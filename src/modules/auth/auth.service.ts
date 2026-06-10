@@ -7,7 +7,7 @@ import { hashPassword, comparePassword } from '../../common/utils/password.util'
 import { generateResetToken, getTokenExpiryDate, isTokenExpired } from '../../common/utils/token.util';
 import { DeviceInfo } from '../../common/utils/device-info.util';
 import { ErrorCodes, Messages } from '../../common/constants';
-import { UserStatus } from '../../common/enums';
+import { UserStatus, UserRole } from '../../common/enums';
 import { RegisterRequestDto, LoginRequestDto, ChangePasswordRequestDto, RefreshTokenRequestDto, UpdateProfileRequestDto } from './dto/request';
 import { LoginResponseDto, RegisterResponseDto, UserResponseDto, } from './dto/response';
 import { SuccessResponseDto } from '../../common/dto';
@@ -32,8 +32,8 @@ export class AuthService {
         private readonly auditService: AuditService,
     ) { }
 
-    async register(registerDto: RegisterRequestDto, deviceInfo: DeviceInfo): Promise<RegisterResponseDto> {
-        const { email, password, firstName, lastName, phone, role } = registerDto;
+    async register(registerDto: RegisterRequestDto): Promise<SuccessResponseDto> {
+        const { email, password, firstName, lastName, phone, role, jobDescription } = registerDto;
 
         const existingUser = await this.prisma.user.findUnique({
             where: { email: email.toLowerCase() },
@@ -58,18 +58,9 @@ export class AuthService {
                 firstName,
                 lastName,
                 phone,
-                role,
+                role: role || UserRole.DEVELOPER,
+                jobDescription,
             },
-        });
-
-        const tokens = await this.generateTokens(user.id, user.email, user.role);
-
-        const refreshExpiresIn = Number(this.configService.getOrThrow<number>('JWT_REFRESH_EXPIRATION_SECONDS'));
-        await this.sessionService.createSession({
-            userId: user.id,
-            refreshToken: tokens.refreshToken,
-            deviceInfo,
-            expiresAt: new Date(Date.now() + refreshExpiresIn * 1000),
         });
 
         await this.notificationsService.create(
@@ -78,11 +69,11 @@ export class AuthService {
             'You registered in successfully.',
             NotificationType.AUTH,
         );
+        await this.emailService.sendAdminRegistrationEmail(user.email, user.firstName, password);
 
-        this.logger.log(`User registered: ${user.email} from ${deviceInfo.deviceType}`);
+        this.logger.log(`User registered: ${user.email} by Admin`);
 
-        return new RegisterResponseDto({
-            tokens,
+        return new SuccessResponseDto({
             message: Messages.AUTH_REGISTER_SUCCESS,
         });
     }

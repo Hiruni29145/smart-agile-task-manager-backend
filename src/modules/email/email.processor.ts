@@ -4,7 +4,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import type { Job } from 'bull';
 
 export interface EmailJobData {
-    type: 'password-reset' | 'welcome' | 'password-changed' | 'support-inquiry';
+    type: 'password-reset' | 'welcome' | 'password-changed' | 'support-inquiry' | 'admin-registration';
     to: string;
     subject: string;
     template: string;

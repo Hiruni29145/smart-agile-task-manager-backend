@@ -79,6 +79,30 @@ export class EmailService {
         await this.sendEmail(jobData);
     }
 
+    async sendAdminRegistrationEmail(
+        email: string,
+        firstName: string,
+        temporaryPassword?: string,
+    ): Promise<void> {
+        const branding = await this.getBrandingContext();
+
+        const jobData: EmailJobData = {
+            type: 'admin-registration',
+            to: email,
+            subject: 'Your Account Has Been Created - Smart Agile System',
+            template: 'admin-registration',
+            context: {
+                firstName,
+                temporaryPassword,
+                loginUrl: `${this.frontendUrl}/login`,
+                year: new Date().getFullYear(),
+                ...branding,
+            },
+        };
+
+        await this.sendEmail(jobData);
+    }
+
     async sendPasswordChangedEmail(
         email: string,
         firstName?: string,
