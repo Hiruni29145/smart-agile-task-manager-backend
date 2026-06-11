@@ -15,6 +15,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { AuditModule } from './modules/audit/audit.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { SprintsModule } from './modules/sprints/sprints.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { JwtAuthGuard } from './common/guards';
 import { appConfig, jwtConfig, throttleConfig, supabaseConfig, cacheConfig, loggerConfig, validateEnv, } from './config';
 
@@ -139,6 +141,8 @@ import { appConfig, jwtConfig, throttleConfig, supabaseConfig, cacheConfig, logg
     AuditModule,
     AdminModule,
     ProjectsModule,
+    SprintsModule,
+    TasksModule,
   ],
   
   providers: [
