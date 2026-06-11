@@ -56,6 +56,8 @@ model User {
   sessions      UserSession[]
   notifications Notification[]
   projects      Project[]
+  assignedTasks Task[]         @relation("TaskAssignee")
+  createdTasks  Task[]         @relation("TaskCreator")
 
   @@index([email])
   @@index([email, status])
@@ -186,8 +188,10 @@ model Project {
   deadline    DateTime?
 
   // Relations
-  createdById String @map("created_by_id")
-  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String   @map("created_by_id")
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  sprints     Sprint[]
+  tasks       Task[]
 
   // Timestamps
   createdAt DateTime  @default(now()) @map("created_at")
@@ -198,4 +202,96 @@ model Project {
   @@index([status])
   @@index([key])
   @@map("projects")
+}
+
+// ===========================================
+// Sprints
+// ===========================================
+
+enum SprintStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+}
+
+model Sprint {
+  id        Int          @id @default(autoincrement())
+  name      String
+  sprintNo  Int          @map("sprint_no")
+  status    SprintStatus @default(PLANNED)
+  startDate DateTime?    @map("start_date")
+  endDate   DateTime?    @map("end_date")
+
+  // Relations
+  projectId Int     @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  // Timestamps
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([projectId])
+  @@index([status])
+  @@map("sprints")
+}
+
+// ===========================================
+// Tasks
+// ===========================================
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+model Task {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String? @db.Text
+
+  // Metrics & Agile Fields
+  priority      TaskPriority @default(MEDIUM)
+  status        TaskStatus   @default(TODO)
+  storyPoints   Float?       @map("story_points")
+  estimatedTime Float?       @map("estimated_time")
+  realTime      Float?       @default(0) @map("real_time")
+  complexity    Int?
+  confidence    Int?
+  deadline      DateTime?
+
+  // Relations
+  projectId Int     @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  sprintId Int?    @map("sprint_id")
+  sprint   Sprint? @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+
+  assigneeId String? @map("assignee_id")
+  assignee   User?   @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  createdById String @map("created_by_id")
+  createdBy   User   @relation("TaskCreator", fields: [createdById], references: [id])
+
+  // Timestamps
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([projectId])
+  @@index([sprintId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([priority])
+  @@map("tasks")
 }
