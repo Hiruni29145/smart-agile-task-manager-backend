@@ -1,6 +1,8 @@
 import { Controller, Post, Get, Put, Delete, Body, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { SprintsService } from './sprints.service';
+import { TasksService } from '../tasks/tasks.service';
 import { CreateSprintRequestDto, UpdateSprintRequestDto, SprintResponseDto, SprintListResponseDto } from './dto';
+import { TaskListResponseDto, GetTasksQueryDto } from '../tasks/dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -10,7 +12,10 @@ import { UserRole } from '../../common/enums/user-role.enum';
 @Controller('sprints')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SprintsController {
-    constructor(private readonly sprintsService: SprintsService) {}
+    constructor(
+        private readonly sprintsService: SprintsService,
+        private readonly tasksService: TasksService,
+    ) {}
 
     @Post()
     @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.DEVELOPER)
@@ -34,6 +39,15 @@ export class SprintsController {
         @Param('id', ParseIntPipe) id: number,
     ): Promise<SprintResponseDto> {
         return this.sprintsService.findOne(id);
+    }
+
+    @Get(':id/tasks')
+    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.DEVELOPER)
+    async getSprintTasks(
+        @Param('id', ParseIntPipe) id: number,
+        @Query() query: GetTasksQueryDto,
+    ): Promise<TaskListResponseDto> {
+        return this.tasksService.findAll(undefined, id, query);
     }
 
     @Put(':id')
