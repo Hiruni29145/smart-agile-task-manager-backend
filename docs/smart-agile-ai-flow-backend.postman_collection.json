@@ -1329,10 +1329,6 @@
       ]
     },
     {
-      "name": "Dashboard",
-      "item": []
-    },
-    {
       "name": "Project",
       "item": [
         {
@@ -1384,7 +1380,7 @@
           "response": []
         },
         {
-          "name": "api/v1/projects?page=1&limit=50",
+          "name": "api/v1/projects?page=1&limit=5&status=ACTIVE",
           "request": {
             "auth": {
               "type": "bearer",
@@ -1408,7 +1404,7 @@
               }
             ],
             "url": {
-              "raw": "{{local_url}}/api/v1/projects?page=1&limit=50",
+              "raw": "{{local_url}}/api/v1/projects?page=1&limit=5&status=ACTIVE",
               "host": [
                 "{{local_url}}"
               ],
@@ -1424,11 +1420,15 @@
                 },
                 {
                   "key": "limit",
-                  "value": "50"
+                  "value": "5"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
                 }
               ]
             },
-            "description": "StartFragmentGET /admin/users?page=1&limit=10&role=USER&status=ACTIVE&search=johnEndFragment"
+            "description": "StartFragment\n\n{{local_url}}/api/v1/projects?page=1&limit=5&status=ACTIVE\n\nenum ProjectStatus {  \nACTIVE  \nCOMPLETED  \nARCHIVED  \n}\n\nEndFragment"
           },
           "response": []
         },
@@ -1466,6 +1466,88 @@
                 "v1",
                 "projects",
                 "1"
+              ]
+            },
+            "description": "StartFragmentGET /admin/users?page=1&limit=10&role=USER&status=ACTIVE&search=johnEndFragment"
+          },
+          "response": []
+        },
+        {
+          "name": "api/v1/projects/ {project id} /sprints",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/projects/1/sprints",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "1",
+                "sprints"
+              ]
+            },
+            "description": "StartFragmentGET /admin/users?page=1&limit=10&role=USER&status=ACTIVE&search=johnEndFragment"
+          },
+          "response": []
+        },
+        {
+          "name": "api/v1/projects/ (project id) /tasks",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/projects/2/tasks",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "2",
+                "tasks"
               ]
             },
             "description": "StartFragmentGET /admin/users?page=1&limit=10&role=USER&status=ACTIVE&search=johnEndFragment"
@@ -1592,7 +1674,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"title\": \"Implement Login Page\",\r\n  \"projectId\": 2,\r\n  \"description\": \"Create the responsive login page with form validations.\",\r\n  \"sprintId\": null,                           \r\n  \"assigneeId\": \"4e4929c1-aef1-45a2-92d9-0e107ff30673\",            \r\n  \"priority\": \"HIGH\",                      \r\n  \"status\": \"TODO\",                        \r\n  \"storyPoints\": 5,\r\n  \"estimatedTime\": 8.5,                    \r\n  \"complexity\": 7,\r\n  \"confidence\": 90,\r\n  \"deadline\": \"2026-06-25\"\r\n}\r\n",
+              "raw": "{\r\n    \"title\": \"Implement Login Page\",\r\n    \"projectId\": 2,\r\n    \"description\": \"Create the responsive login page with form validations.\",\r\n    \"sprintId\": null,\r\n    \"assigneeId\": \"4e4929c1-aef1-45a2-92d9-0e107ff30673\",\r\n    \"priority\": \"HIGH\",\r\n    \"status\": \"TODO\",\r\n    \"TaskType\": \"FEATURE\",\r\n    // \"TaskType\": \"BUG\",\r\n    // \"TaskType\": \"CHORE\",\r\n    // \"TaskType\": \"SPIKE\",\r\n    \"storyPoints\": 5,\r\n    \"estimatedTime\": 8.5,\r\n    \"complexity\": 7,\r\n    \"confidence\": 90,\r\n    \"deadline\": \"2026-06-25\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1615,7 +1697,7 @@
           "response": []
         },
         {
-          "name": "api/v1/tasks?page=1&limit=50",
+          "name": "api/v1/tasks?page=1&limit=50&status=TODO&priority=HIGH&type=FEATURE",
           "request": {
             "auth": {
               "type": "bearer",
@@ -1639,7 +1721,7 @@
               }
             ],
             "url": {
-              "raw": "{{local_url}}/api/v1/tasks?page=1&limit=50",
+              "raw": "{{local_url}}/api/v1/tasks?page=1&limit=50&status=TODO&priority=HIGH&type=FEATURE",
               "host": [
                 "{{local_url}}"
               ],
@@ -1656,10 +1738,22 @@
                 {
                   "key": "limit",
                   "value": "50"
+                },
+                {
+                  "key": "status",
+                  "value": "TODO"
+                },
+                {
+                  "key": "priority",
+                  "value": "HIGH"
+                },
+                {
+                  "key": "type",
+                  "value": "FEATURE"
                 }
               ]
             },
-            "description": "StartFragment\n\nGET /tasks?projectId={id}&sprintId={id}&page={page}&limit={limit}\n\nEndFragment"
+            "description": "StartFragment\n\n{{local_url}}/api/v1/tasks?page=1&limit=50&status=TODO&priority=HIGH&type=FEATURE\n\nEndFragment"
           },
           "response": []
         },
@@ -1944,6 +2038,47 @@
           "response": []
         },
         {
+          "name": "api/v1/sprints/ (sprint id) /tasks",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/sprints/1/tasks",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sprints",
+                "1",
+                "tasks"
+              ]
+            },
+            "description": "StartFragment\n\nGET /tasks?projectId={id}&sprintId={id}&page={page}&limit={limit}\n\nEndFragment"
+          },
+          "response": []
+        },
+        {
           "name": "api/v1/sprints/ (id)",
           "request": {
             "auth": {
@@ -2026,6 +2161,216 @@
                 "v1",
                 "sprints",
                 "1"
+              ]
+            },
+            "description": "StartFragment\n\nGET /tasks?projectId={id}&sprintId={id}&page={page}&limit={limit}\n\nEndFragment"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "api/v1/dashboard/stats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/dashboard/stats",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "stats"
+              ]
+            },
+            "description": "StartFragment\n\nGET /tasks?projectId={id}&sprintId={id}&page={page}&limit={limit}\n\nEndFragment"
+          },
+          "response": []
+        },
+        {
+          "name": "api/v1/dashboard/active-sprints",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/dashboard/active-sprints",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "active-sprints"
+              ]
+            },
+            "description": "StartFragment\n\nGET /tasks?projectId={id}&sprintId={id}&page={page}&limit={limit}\n\nEndFragment"
+          },
+          "response": []
+        },
+        {
+          "name": "api/v1/dashboard/global-distribution",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/dashboard/global-distribution",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "global-distribution"
+              ]
+            },
+            "description": "StartFragment\n\nGET /tasks?projectId={id}&sprintId={id}&page={page}&limit={limit}\n\nEndFragment"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "item": [
+        {
+          "name": "api/v1/teams",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/teams/stats",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "teams",
+                "stats"
+              ]
+            },
+            "description": "StartFragment\n\nGET /tasks?projectId={id}&sprintId={id}&page={page}&limit={limit}\n\nEndFragment"
+          },
+          "response": []
+        },
+        {
+          "name": "api/v1/teams/members",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/teams/members",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "teams",
+                "members"
               ]
             },
             "description": "StartFragment\n\nGET /tasks?projectId={id}&sprintId={id}&page={page}&limit={limit}\n\nEndFragment"
