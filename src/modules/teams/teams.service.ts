@@ -11,36 +11,63 @@ export class TeamsService {
     async getTeamStats(): Promise<TeamStatsResponseDto> {
         const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000);
 
-        const [totalDeveloper, activeNow] = await Promise.all([
-            // Total Developers
-            this.prisma.user.count({
-                where: {
-                    role: UserRole.DEVELOPER,
-                    status: UserStatus.ACTIVE,
-                    deletedAt: null,
+        const users = await this.prisma.user.findMany({
+            where: {
+                role: UserRole.DEVELOPER,
+                status: UserStatus.ACTIVE,
+                deletedAt: null,
+            },
+            include: {
+                sessions: {
+                    where: {
+                        isActive: true,
+                        lastActivityAt: { gte: thirtyMinsAgo },
+                    },
+                    take: 1,
                 },
-            }),
-            // Developers active in the last 30 minutes
-            this.prisma.user.count({
-                where: {
-                    role: UserRole.DEVELOPER,
-                    status: UserStatus.ACTIVE,
-                    deletedAt: null,
-                    sessions: {
-                        some: {
-                            lastActivityAt: {
-                                gte: thirtyMinsAgo,
-                            },
-                            isActive: true,
-                        },
+                assignedTasks: {
+                    where: {
+                        status: { in: [TaskStatus.TODO, TaskStatus.IN_PROGRESS, TaskStatus.REVIEW] },
+                        deletedAt: null,
                     },
                 },
-            }),
-        ]);
+            },
+        });
+
+        const totalDeveloper = users.length;
+        let activeNow = 0;
+        let overloaded = 0;
+        let totalWorkloadPercentage = 0;
+
+        const STANDARD_WEEKLY_HOURS = 40;
+        const FALLBACK_TASK_HOURS = 5;
+
+        users.forEach((user) => {
+            if (user.sessions.length > 0) {
+                activeNow++;
+            }
+
+            const totalEstimatedHours = user.assignedTasks.reduce((sum, task) => {
+                return sum + (task.estimatedTime || FALLBACK_TASK_HOURS);
+            }, 0);
+
+            let workloadPercentage = Math.round((totalEstimatedHours / STANDARD_WEEKLY_HOURS) * 100);
+            if (workloadPercentage > 100) workloadPercentage = 100;
+
+            if (workloadPercentage >= 80) {
+                overloaded++;
+            }
+
+            totalWorkloadPercentage += workloadPercentage;
+        });
+
+        const avgWorkload = totalDeveloper > 0 ? Math.round(totalWorkloadPercentage / totalDeveloper) : 0;
 
         return new TeamStatsResponseDto({
             totalDeveloper,
             activeNow,
+            overloaded,
+            avgWorkload,
         });
     }
 

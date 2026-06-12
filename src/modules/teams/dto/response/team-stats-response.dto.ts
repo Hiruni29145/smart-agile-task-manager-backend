@@ -7,6 +7,12 @@ export class TeamStatsResponseDto {
     @Expose()
     activeNow!: number;
 
+    @Expose()
+    overloaded!: number;
+
+    @Expose()
+    avgWorkload!: number;
+
     constructor(partial: Partial<TeamStatsResponseDto>) {
         Object.assign(this, partial);
     }
