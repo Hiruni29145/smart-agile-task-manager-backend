@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { TaskPriority, TaskStatus } from '@prisma/client';
+import { Task, TaskPriority, TaskStatus, TaskType } from '@prisma/client';
 
 export class TaskResponseDto {
     @Expose()
@@ -10,6 +10,9 @@ export class TaskResponseDto {
 
     @Expose()
     description!: string | null;
+
+    @Expose()
+    type!: TaskType;
 
     @Expose()
     priority!: TaskPriority;

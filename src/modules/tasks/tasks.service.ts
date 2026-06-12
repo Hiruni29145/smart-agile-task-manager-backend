@@ -15,6 +15,7 @@ export class TasksService {
                 title: createDto.title,
                 description: createDto.description,
                 projectId: createDto.projectId,
+                type: createDto.type,
                 sprintId: createDto.sprintId,
                 assigneeId: createDto.assigneeId,
                 priority: createDto.priority,
@@ -97,6 +98,7 @@ export class TasksService {
             data: {
                 title: updateDto.title,
                 description: updateDto.description,
+                type: updateDto.type,
                 projectId: updateDto.projectId,
                 sprintId: updateDto.sprintId,
                 assigneeId: updateDto.assigneeId,

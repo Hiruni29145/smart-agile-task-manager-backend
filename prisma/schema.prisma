@@ -255,12 +255,20 @@ enum TaskStatus {
   DONE
 }
 
+enum TaskType {
+  FEATURE
+  BUG
+  CHORE
+  SPIKE
+}
+
 model Task {
   id          Int     @id @default(autoincrement())
   title       String
   description String? @db.Text
 
   // Metrics & Agile Fields
+  type          TaskType     @default(FEATURE)
   priority      TaskPriority @default(MEDIUM)
   status        TaskStatus   @default(TODO)
   storyPoints   Float?       @map("story_points")
