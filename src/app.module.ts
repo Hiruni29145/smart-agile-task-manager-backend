@@ -18,6 +18,7 @@ import { ProjectsModule } from './modules/projects/projects.module';
 import { SprintsModule } from './modules/sprints/sprints.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { TeamsModule } from './modules/teams/teams.module';
 import { JwtAuthGuard } from './common/guards';
 import { appConfig, jwtConfig, throttleConfig, supabaseConfig, cacheConfig, loggerConfig, validateEnv, } from './config';
 
@@ -145,6 +146,7 @@ import { appConfig, jwtConfig, throttleConfig, supabaseConfig, cacheConfig, logg
     SprintsModule,
     TasksModule,
     DashboardModule,
+    TeamsModule,
   ],
   
   providers: [
