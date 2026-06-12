@@ -1,6 +1,8 @@
 import { Controller, Post, Get, Put, Delete, Body, Query, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
+import { TasksService } from '../tasks/tasks.service';
 import { CreateProjectRequestDto, UpdateProjectRequestDto, ProjectResponseDto, ProjectListResponseDto, GetProjectsQueryDto } from './dto';
+import { TaskListResponseDto, GetTasksQueryDto } from '../tasks/dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/request-with-user.interface';
@@ -11,7 +13,10 @@ import { UserRole } from '../../common/enums/user-role.enum'
 @Controller('projects')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ProjectsController {
-    constructor(private readonly projectsService: ProjectsService) {}
+    constructor(
+        private readonly projectsService: ProjectsService,
+        private readonly tasksService: TasksService,
+    ) {}
 
     @Post()
     @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
@@ -36,6 +41,15 @@ export class ProjectsController {
         @Param('id', ParseIntPipe) id: number,
     ): Promise<ProjectResponseDto> {
         return this.projectsService.findOne(id);
+    }
+
+    @Get(':id/tasks')
+    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.DEVELOPER)
+    async getProjectTasks(
+        @Param('id', ParseIntPipe) id: number,
+        @Query() query: GetTasksQueryDto,
+    ): Promise<TaskListResponseDto> {
+        return this.tasksService.findAll(id, undefined, query);
     }
 
     @Put(':id')
