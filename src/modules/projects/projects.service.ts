@@ -1,10 +1,9 @@
 import { Injectable, ConflictException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { CreateProjectRequestDto, UpdateProjectRequestDto, ProjectResponseDto, ProjectListResponseDto } from './dto';
-import { NotificationType, ProjectStatus } from '@prisma/client';
+import { CreateProjectRequestDto, UpdateProjectRequestDto, ProjectResponseDto, ProjectListResponseDto, GetProjectsQueryDto } from './dto';
+import { NotificationType, ProjectStatus, Prisma } from '@prisma/client';
 import { ErrorCodes, Messages } from '../../common/constants';
-import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -50,14 +49,18 @@ export class ProjectsService {
         return new ProjectResponseDto(project);
     }
 
-    async findAll(userId: string, query: PaginationDto): Promise<ProjectListResponseDto> {
-        const { page = 1, limit = 30 } = query;
+    async findAll(userId: string, query: GetProjectsQueryDto): Promise<ProjectListResponseDto> {
+        const { page = 1, limit = 30, status } = query;
         const skip = (page - 1) * limit;
 
-        const where = {
+        const where: Prisma.ProjectWhereInput = {
             deletedAt: null,
             createdById: userId, 
         };
+
+        if (status) {
+            where.status = status;
+        }
 
         const [items, total] = await Promise.all([
             this.prisma.project.findMany({
