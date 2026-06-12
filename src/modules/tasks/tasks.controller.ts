@@ -1,7 +1,6 @@
 import { Controller, Post, Get, Put, Delete, Body, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { CreateTaskRequestDto, UpdateTaskRequestDto, TaskResponseDto, TaskListResponseDto } from './dto';
-import { PaginationDto } from '../../common/dto/pagination.dto';
+import { CreateTaskRequestDto, UpdateTaskRequestDto, TaskResponseDto, TaskListResponseDto, GetTasksQueryDto } from './dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -24,7 +23,7 @@ export class TasksController {
     async findAll(
         @Query('projectId') projectId: string,
         @Query('sprintId') sprintId: string,
-        @Query() query: PaginationDto,
+        @Query() query: GetTasksQueryDto,
     ): Promise<TaskListResponseDto> {
         const parsedProjectId = projectId ? parseInt(projectId, 10) : undefined;
         const parsedSprintId = sprintId ? parseInt(sprintId, 10) : undefined;

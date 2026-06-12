@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { CreateTaskRequestDto, UpdateTaskRequestDto, TaskResponseDto, TaskListResponseDto } from './dto';
-import { PaginationDto } from '../../common/dto/pagination.dto';
+import { CreateTaskRequestDto, UpdateTaskRequestDto, TaskResponseDto, TaskListResponseDto, GetTasksQueryDto } from './dto';
 import { ErrorCodes } from '../../common/constants';
 import { Prisma } from '@prisma/client';
 
@@ -33,7 +32,7 @@ export class TasksService {
         return { message: 'Task created successfully' };
     }
 
-    async findAll(projectId: number | undefined, sprintId: number | undefined, query: PaginationDto): Promise<TaskListResponseDto> {
+    async findAll(projectId: number | undefined, sprintId: number | undefined, query: GetTasksQueryDto): Promise<TaskListResponseDto> {
         const page = query.page || 1;
         const limit = query.limit || 30;
         const skip = (page - 1) * limit;
@@ -41,6 +40,10 @@ export class TasksService {
         const whereCondition: Prisma.TaskWhereInput = {
             deletedAt: null,
         };
+
+        if (query.status) whereCondition.status = query.status;
+        if (query.priority) whereCondition.priority = query.priority;
+        if (query.type) whereCondition.type = query.type;
 
         if (projectId !== undefined) {
             whereCondition.projectId = projectId;
