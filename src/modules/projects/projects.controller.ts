@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Put, Delete, Body, Query, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { TasksService } from '../tasks/tasks.service';
-import { CreateProjectRequestDto, UpdateProjectRequestDto, ProjectResponseDto, ProjectListResponseDto, GetProjectsQueryDto } from './dto';
+import { CreateProjectRequestDto, UpdateProjectRequestDto, ProjectResponseDto, ProjectListResponseDto, GetProjectsQueryDto, ProjectSprintsResponseDto } from './dto';
 import { TaskListResponseDto, GetTasksQueryDto } from '../tasks/dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -50,6 +50,14 @@ export class ProjectsController {
         @Query() query: GetTasksQueryDto,
     ): Promise<TaskListResponseDto> {
         return this.tasksService.findAll(id, undefined, query);
+    }
+
+    @Get(':id/sprints')
+    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.DEVELOPER)
+    async getProjectSprints(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<ProjectSprintsResponseDto> {
+        return this.projectsService.getProjectSprintsWithTasks(id);
     }
 
     @Put(':id')

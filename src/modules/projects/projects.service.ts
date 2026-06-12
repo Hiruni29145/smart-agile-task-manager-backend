@@ -1,8 +1,9 @@
 import { Injectable, ConflictException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { CreateProjectRequestDto, UpdateProjectRequestDto, ProjectResponseDto, ProjectListResponseDto, GetProjectsQueryDto } from './dto';
+import { CreateProjectRequestDto, UpdateProjectRequestDto, ProjectResponseDto, ProjectListResponseDto, GetProjectsQueryDto, ProjectSprintsResponseDto, ProjectSprintWithTasksDto } from './dto';
 import { NotificationType, ProjectStatus, Prisma } from '@prisma/client';
+import { TaskResponseDto } from '../tasks/dto';
 import { ErrorCodes, Messages } from '../../common/constants';
 
 @Injectable()
@@ -177,5 +178,34 @@ export class ProjectsService {
         );
 
         return { message: 'Project deleted successfully' };
+    }
+
+    async getProjectSprintsWithTasks(projectId: number): Promise<ProjectSprintsResponseDto> {
+        await this.findOne(projectId);
+
+        const sprints = await this.prisma.sprint.findMany({
+            where: {
+                projectId,
+                deletedAt: null,
+            },
+            include: {
+                tasks: {
+                    where: { deletedAt: null },
+                    orderBy: { createdAt: 'desc' },
+                },
+            },
+            orderBy: { sprintNo: 'asc' },
+        });
+
+        const sprintDtos = sprints.map((sprint) => {
+            return new ProjectSprintWithTasksDto({
+                ...sprint,
+                tasks: sprint.tasks.map((task) => new TaskResponseDto(task)),
+            });
+        });
+
+        return new ProjectSprintsResponseDto({
+            sprints: sprintDtos,
+        });
     }
 }
