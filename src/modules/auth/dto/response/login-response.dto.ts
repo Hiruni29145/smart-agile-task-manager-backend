@@ -1,4 +1,5 @@
 import { Expose, Type } from 'class-transformer';
+import { UserRole } from '@prisma/client';
 
 export class LoginTokensDto {
     @Expose()
@@ -12,6 +13,9 @@ export class LoginResponseDto {
     @Expose()
     @Type(() => LoginTokensDto)
     tokens!: LoginTokensDto;
+
+    @Expose()
+    role!: UserRole;
 
     @Expose()
     message?: string;

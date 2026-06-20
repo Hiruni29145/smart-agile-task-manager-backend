@@ -185,6 +185,7 @@ export class AuthService {
 
         return new LoginResponseDto({
             tokens,
+            role: user.role as UserRole,
             message: Messages.AUTH_LOGIN_SUCCESS,
         });
     }
