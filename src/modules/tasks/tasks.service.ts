@@ -59,6 +59,7 @@ export class TasksService {
                 skip,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
+                include: { assignee: true },
             }),
             this.prisma.task.count({ where: whereCondition }),
         ]);
@@ -66,7 +67,13 @@ export class TasksService {
         const totalPages = Math.ceil(total / limit);
 
         return new TaskListResponseDto({
-            items: tasks.map((task) => new TaskResponseDto(task)),
+            items: tasks.map((task) => new TaskResponseDto({
+                ...task,
+                assignee: task.assignee ? {
+                    id: task.assignee.id,
+                    name: `${task.assignee.firstName} ${task.assignee.lastName}`.trim(),
+                } : null,
+            })),
             meta: {
                 page,
                 limit,
@@ -81,6 +88,7 @@ export class TasksService {
     async findOne(id: number): Promise<TaskResponseDto> {
         const task = await this.prisma.task.findUnique({
             where: { id, deletedAt: null },
+            include: { assignee: true },
         });
 
         if (!task) {
@@ -90,7 +98,13 @@ export class TasksService {
             });
         }
 
-        return new TaskResponseDto(task);
+        return new TaskResponseDto({
+            ...task,
+            assignee: task.assignee ? {
+                id: task.assignee.id,
+                name: `${task.assignee.firstName} ${task.assignee.lastName}`.trim(),
+            } : null,
+        });
     }
 
     async update(id: number, updateDto: UpdateTaskRequestDto): Promise<{ message: string }> {

@@ -48,6 +48,9 @@ export class TaskResponseDto {
     assigneeId!: string | null;
 
     @Expose()
+    assignee?: { id: string; name: string } | null;
+
+    @Expose()
     createdById!: string;
 
     @Expose()
