@@ -69,11 +69,26 @@ export class ProjectsService {
                 skip,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
+                include: {
+                    tasks: {
+                        select: { status: true },
+                        where: { deletedAt: null },
+                    },
+                },
             }),
             this.prisma.project.count({ where }),
         ]);
 
-        const mappedItems = items.map((item) => new ProjectResponseDto(item));
+        const mappedItems = items.map((item) => {
+            const totalTasks = item.tasks.length;
+            const doneTasks = item.tasks.filter((t) => t.status === 'DONE').length;
+            const progress = totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100);
+
+            return new ProjectResponseDto({
+                ...item,
+                progress,
+            });
+        });
 
         return new ProjectListResponseDto({
             items: mappedItems,
@@ -91,6 +106,12 @@ export class ProjectsService {
     async findOne(id: number): Promise<ProjectResponseDto> {
         const project = await this.prisma.project.findFirst({
             where: { id, deletedAt: null },
+            include: {
+                tasks: {
+                    select: { status: true },
+                    where: { deletedAt: null },
+                },
+            },
         });
 
         if (!project) {
@@ -100,7 +121,14 @@ export class ProjectsService {
             });
         }
 
-        return new ProjectResponseDto(project);
+        const totalTasks = project.tasks.length;
+        const doneTasks = project.tasks.filter((t) => t.status === 'DONE').length;
+        const progress = totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100);
+
+        return new ProjectResponseDto({
+            ...project,
+            progress,
+        });
     }
 
     async update(userId: string, id: number, dto: UpdateProjectRequestDto): Promise<ProjectResponseDto> {

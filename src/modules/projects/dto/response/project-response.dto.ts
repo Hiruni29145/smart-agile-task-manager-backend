@@ -19,6 +19,9 @@ export class ProjectResponseDto {
     status!: ProjectStatus;
 
     @Expose()
+    progress?: number;
+
+    @Expose()
     deadline!: Date | null;
 
     @Expose()
