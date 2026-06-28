@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { TeamStatsResponseDto, TeamMemberProfileDto, TeamMemberListResponseDto } from './dto';
+import { TeamStatsResponseDto, TeamMemberProfileDto, TeamMemberListResponseDto, TeamMemberDetailsResponseDto } from './dto';
 import { UserRole, UserStatus, TaskStatus } from '@prisma/client';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import { NotFoundException } from '@nestjs/common';
+import { ErrorCodes } from '../../common/constants';
+import { TaskResponseDto } from '../tasks/dto';
 
 @Injectable()
 export class TeamsService {
@@ -146,6 +149,75 @@ export class TeamsService {
                 hasNextPage: page < Math.ceil(total / limit),
                 hasPreviousPage: page > 1,
             },
+        });
+    }
+
+    async getTeamMemberDetails(id: string): Promise<TeamMemberDetailsResponseDto> {
+        const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+        const user = await this.prisma.user.findUnique({
+            where: { id, deletedAt: null },
+            include: {
+                sessions: {
+                    where: {
+                        isActive: true,
+                        lastActivityAt: { gte: thirtyMinsAgo },
+                    },
+                    take: 1,
+                },
+                assignedTasks: {
+                    where: {
+                        status: { in: [TaskStatus.TODO, TaskStatus.IN_PROGRESS, TaskStatus.REVIEW] },
+                        deletedAt: null,
+                    },
+                    orderBy: { createdAt: 'desc' },
+                },
+            },
+        });
+
+        if (!user) {
+            throw new NotFoundException({
+                code: ErrorCodes.RESOURCE_NOT_FOUND,
+                message: 'User not found.',
+            });
+        }
+
+        const isOnline = user.sessions.length > 0;
+        const openTasks = user.assignedTasks.length;
+
+        const STANDARD_WEEKLY_HOURS = 40;
+        const FALLBACK_TASK_HOURS = 5;
+
+        const totalEstimatedHours = user.assignedTasks.reduce((sum, task) => {
+            return sum + (task.estimatedTime || FALLBACK_TASK_HOURS);
+        }, 0);
+
+        let workloadPercentage = Math.round((totalEstimatedHours / STANDARD_WEEKLY_HOURS) * 100);
+        if (workloadPercentage > 100) workloadPercentage = 100;
+
+        const capacityStatus = workloadPercentage >= 80 ? 'Overloaded' : 'Healthy';
+
+        const activeTasks = user.assignedTasks.map((task) => {
+            return new TaskResponseDto({
+                ...task,
+                assignee: {
+                    id: user.id,
+                    name: `${user.firstName} ${user.lastName}`.trim(),
+                },
+            });
+        });
+
+        return new TeamMemberDetailsResponseDto({
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatar: user.avatar,
+            role: user.role,
+            isOnline,
+            openTasks,
+            workloadPercentage,
+            capacityStatus,
+            activeTasks,
         });
     }
 }
