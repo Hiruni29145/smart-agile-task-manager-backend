@@ -62,6 +62,15 @@ export const Messages = {
 
     // Dashboard
     DASHBOARD_STATS_RETRIEVED: 'Dashboard statistics retrieved',
+
+    // Storage
+    STORAGE_CREDENTIALS_MISSING: 'Storage credentials are not configured properly',
+    STORAGE_CONFIG_MISSING: 'Storage configuration is missing',
+    STORAGE_UPLOAD_PROFILE_SUCCESS: 'Profile image uploaded successfully',
+    STORAGE_UPLOAD_IMAGE_SUCCESS: 'Image uploaded successfully',
+    STORAGE_UPLOAD_ASSET_SUCCESS: 'Asset uploaded successfully',
+    STORAGE_NO_FILE: 'No file provided',
+    STORAGE_UPLOAD_FAILED: 'File upload failed',
 } as const;
 
 export type Message = (typeof Messages)[keyof typeof Messages];
