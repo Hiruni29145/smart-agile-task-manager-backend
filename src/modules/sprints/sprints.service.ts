@@ -42,6 +42,15 @@ export class SprintsService {
                 skip,
                 take: limit,
                 orderBy: { sprintNo: 'desc' },
+                include: {
+                    tasks: {
+                        where: { deletedAt: null },
+                        select: {
+                            estimatedTime: true,
+                            storyPoints: true,
+                        },
+                    },
+                },
             }),
             this.prisma.sprint.count({ where: whereCondition }),
         ]);
@@ -49,7 +58,15 @@ export class SprintsService {
         const totalPages = Math.ceil(total / limit);
 
         return new SprintListResponseDto({
-            items: sprints.map((sprint) => new SprintResponseDto(sprint)),
+            items: sprints.map((sprint) => {
+                const estimatedWorkload = sprint.tasks.reduce((sum, task) => sum + (task.estimatedTime || 0), 0);
+                const storyPoints = sprint.tasks.reduce((sum, task) => sum + (task.storyPoints || 0), 0);
+                return new SprintResponseDto({
+                    ...sprint,
+                    estimatedWorkload,
+                    storyPoints,
+                });
+            }),
             meta: {
                 page,
                 limit,
