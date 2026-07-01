@@ -29,6 +29,12 @@ export class SprintResponseDto {
     @Expose()
     updatedAt!: Date;
 
+    @Expose()
+    estimatedWorkload?: number;
+
+    @Expose()
+    storyPoints?: number;
+
     constructor(partial: Partial<SprintResponseDto>) {
         Object.assign(this, partial);
     }

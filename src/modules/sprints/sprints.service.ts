@@ -64,6 +64,15 @@ export class SprintsService {
     async findOne(id: number): Promise<SprintResponseDto> {
         const sprint = await this.prisma.sprint.findUnique({
             where: { id, deletedAt: null },
+            include: {
+                tasks: {
+                    where: { deletedAt: null },
+                    select: {
+                        estimatedTime: true,
+                        storyPoints: true,
+                    },
+                },
+            },
         });
 
         if (!sprint) {
@@ -73,7 +82,14 @@ export class SprintsService {
             });
         }
 
-        return new SprintResponseDto(sprint);
+        const estimatedWorkload = sprint.tasks.reduce((sum, task) => sum + (task.estimatedTime || 0), 0);
+        const storyPoints = sprint.tasks.reduce((sum, task) => sum + (task.storyPoints || 0), 0);
+
+        return new SprintResponseDto({
+            ...sprint,
+            estimatedWorkload,
+            storyPoints,
+        });
     }
 
     async update(id: number, updateDto: UpdateSprintRequestDto): Promise<{ message: string }> {
