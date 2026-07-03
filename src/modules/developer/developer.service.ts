@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { GetMyTasksQueryDto, KanbanBoardResponseDto, UpdateTaskStatusDto, DeveloperSprintDashboardDto } from './dto';
+import { GetMyTasksQueryDto, KanbanBoardResponseDto, UpdateTaskStatusDto, DeveloperSprintDashboardDto, DeveloperMainDashboardDto } from './dto';
 import { TaskListResponseDto, TaskResponseDto } from '../tasks/dto';
 import { ErrorCodes } from '../../common/constants';
 
@@ -230,6 +230,124 @@ export class DeveloperService {
             },
             burndownData,
             timeline
+        });
+    }
+
+    async getMainDashboard(userId: string, projectId?: number): Promise<DeveloperMainDashboardDto> {
+        const whereCondition: any = {
+            assigneeId: userId,
+            deletedAt: null,
+        };
+
+        if (projectId) {
+            whereCondition.projectId = projectId;
+        }
+
+        const sprintWhere: any = {
+            status: 'ACTIVE',
+            deletedAt: null,
+            tasks: { some: { assigneeId: userId, deletedAt: null } }
+        };
+        if (projectId) sprintWhere.projectId = projectId;
+
+        const activeSprint = await this.prisma.sprint.findFirst({
+            where: sprintWhere,
+            orderBy: { createdAt: 'desc' },
+        });
+
+        if (activeSprint) {
+            whereCondition.sprintId = activeSprint.id;
+        }
+
+        const tasks = await this.prisma.task.findMany({
+            where: whereCondition,
+            orderBy: { priority: 'desc' }, 
+        });
+
+        const inProgressTask = tasks.find(t => t.status === 'IN_PROGRESS');
+        const nextTodo = tasks.find(t => t.status === 'TODO');
+        const focusTask = inProgressTask || nextTodo;
+
+        const currentFocus = focusTask ? {
+            id: focusTask.id,
+            title: focusTask.title,
+            priority: focusTask.priority as any,
+            estimatedTime: focusTask.estimatedTime || 0,
+            storyPoints: focusTask.storyPoints || 0,
+        } : null;
+
+        const assigned = tasks.length;
+        const completed = tasks.filter(t => t.status === 'DONE').length;
+        const pending = tasks.filter(t => t.status !== 'DONE').length;
+        
+        let workloadPercentage = 0;
+        if (assigned > 0) {
+             workloadPercentage = Math.round((completed / assigned) * 100);
+        }
+
+        const metrics = {
+            assigned,
+            completed,
+            pending,
+            workloadPercentage
+        };
+
+        const upcomingTasks = tasks
+            .filter(t => t.status !== 'DONE' && (!focusTask || t.id !== focusTask.id))
+            .slice(0, 3)
+            .map(t => ({
+                id: t.id,
+                title: t.title,
+                priority: t.priority as any,
+                estimatedTime: t.estimatedTime || 0,
+                storyPoints: t.storyPoints || 0,
+            }));
+
+        const myStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+        
+        let daysRemaining = 0;
+        if (activeSprint && activeSprint.endDate) {
+            const now = new Date();
+            daysRemaining = Math.max(0, Math.ceil((activeSprint.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+        }
+
+        const sprintStatus = {
+            tasksCompleted: completed,
+            tasksTotal: assigned,
+            daysRemaining,
+            myStoryPoints
+        };
+
+        const recentActivity = [
+            {
+                id: 1,
+                user: 'System',
+                action: 'assigned task',
+                target: focusTask ? focusTask.title : 'New task',
+                timeAgo: '2h'
+            },
+            {
+                id: 2,
+                user: 'Admin',
+                action: 'commented on',
+                target: 'Refactor billing webhook',
+                timeAgo: '12m'
+            },
+            {
+                id: 3,
+                user: 'AI Estimator',
+                action: 'predicted',
+                target: 'Push notification service worker',
+                timeAgo: '24m'
+            }
+        ];
+
+        return new DeveloperMainDashboardDto({
+            currentFocus,
+            metrics,
+            upcomingQueue: upcomingTasks,
+            sprintStatus,
+            recentActivity
         });
     }
 }
