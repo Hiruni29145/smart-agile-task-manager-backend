@@ -1,6 +1,6 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Patch, Param, Body, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { DeveloperService } from './developer.service';
-import { GetMyTasksQueryDto } from './dto';
+import { GetMyTasksQueryDto, KanbanBoardResponseDto, UpdateTaskStatusDto } from './dto';
 import { TaskListResponseDto } from '../tasks/dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -21,5 +21,23 @@ export class DeveloperController {
         @CurrentUser() user: User,
     ): Promise<TaskListResponseDto> {
         return this.developerService.getMyTasks(user.id, query);
+    }
+
+    @Get('kanban')
+    @Roles(UserRole.DEVELOPER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+    async getKanbanBoard(
+        @CurrentUser() user: User,
+    ): Promise<KanbanBoardResponseDto> {
+        return this.developerService.getKanbanBoard(user.id);
+    }
+
+    @Put('tasks/:id/status')
+    @Roles(UserRole.DEVELOPER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+    async updateTaskStatus(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateDto: UpdateTaskStatusDto,
+        @CurrentUser() user: User,
+    ): Promise<{ message: string }> {
+        return this.developerService.updateTaskStatus(user.id, id, updateDto);
     }
 }
