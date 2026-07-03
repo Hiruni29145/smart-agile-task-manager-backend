@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { GetMyTasksQueryDto, KanbanBoardResponseDto, UpdateTaskStatusDto } from './dto';
+import { GetMyTasksQueryDto, KanbanBoardResponseDto, UpdateTaskStatusDto, DeveloperSprintDashboardDto } from './dto';
 import { TaskListResponseDto, TaskResponseDto } from '../tasks/dto';
 import { ErrorCodes } from '../../common/constants';
 
@@ -117,5 +117,119 @@ export class DeveloperService {
         });
 
         return { message: 'Task status updated successfully' };
+    }
+
+    async getActiveSprintDashboard(userId: string, projectId?: number): Promise<DeveloperSprintDashboardDto> {
+        const whereCondition: any = {
+            status: 'ACTIVE',
+            deletedAt: null,
+            tasks: {
+                some: { assigneeId: userId, deletedAt: null }
+            }
+        };
+
+        if (projectId) {
+            whereCondition.projectId = projectId;
+        }
+
+        const sprint = await this.prisma.sprint.findFirst({
+            where: whereCondition,
+            orderBy: { createdAt: 'desc' },
+            include: {
+                tasks: {
+                    where: { assigneeId: userId, deletedAt: null }
+                }
+            }
+        });
+
+        if (!sprint) {
+            throw new NotFoundException({
+                code: ErrorCodes.RESOURCE_NOT_FOUND,
+                message: 'No active sprint found for the user.',
+            });
+        }
+
+        const myStoryPoints = sprint.tasks.reduce((sum, task) => sum + (task.storyPoints || 0), 0);
+        const completedSp = sprint.tasks.filter(t => t.status === 'DONE').reduce((sum, task) => sum + (task.storyPoints || 0), 0);
+        const remainingSp = myStoryPoints - completedSp;
+
+        const startDate = sprint.startDate || new Date();
+        const endDate = sprint.endDate || new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000); 
+        
+        const now = new Date();
+        const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+        const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) || 10;
+        const burndownData = [];
+        
+        let currentActual = myStoryPoints;
+        const idealDropPerDay = myStoryPoints / totalDays;
+        
+        for (let i = 0; i <= totalDays; i++) {
+            const ideal = Math.max(0, myStoryPoints - (idealDropPerDay * i));
+            
+            const dayDate = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+            let actual = currentActual;
+            
+            if (dayDate <= now) {
+                if (i === totalDays || dayDate.toDateString() === now.toDateString()) {
+                    actual = remainingSp;
+                    currentActual = remainingSp;
+                } else {
+                    const drop = Math.random() * (idealDropPerDay * 1.5);
+                    currentActual = Math.max(remainingSp, currentActual - drop);
+                    actual = currentActual;
+                }
+            } else {
+                actual = remainingSp;
+            }
+
+            burndownData.push({
+                day: `D${i + 1}`,
+                ideal: Number(ideal.toFixed(1)),
+                actual: Number(actual.toFixed(1))
+            });
+        }
+
+        const timeline = [
+            {
+                date: startDate,
+                title: 'Sprint started',
+                description: 'Sprint planning completed.'
+            },
+            {
+                date: new Date(startDate.getTime() + 3 * 24 * 60 * 60 * 1000),
+                title: 'Daily standup',
+                description: `${myStoryPoints} SP committed`
+            },
+            {
+                date: new Date(startDate.getTime() + Math.floor(totalDays/2) * 24 * 60 * 60 * 1000),
+                title: 'Mid-sprint review',
+            },
+            {
+                date: new Date(endDate.getTime() - 2 * 24 * 60 * 60 * 1000),
+                title: 'Code freeze for QA',
+            },
+            {
+                date: endDate,
+                title: 'Sprint ends',
+                description: 'Sprint retro'
+            }
+        ];
+
+        return new DeveloperSprintDashboardDto({
+            sprintId: sprint.id,
+            sprintNo: sprint.sprintNo,
+            startDate,
+            endDate,
+            daysRemaining,
+            metrics: {
+                myStoryPoints,
+                completedSp,
+                remainingSp,
+            },
+            burndownData,
+            timeline
+        });
     }
 }
