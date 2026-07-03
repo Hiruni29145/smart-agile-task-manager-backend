@@ -20,6 +20,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { TeamsModule } from './modules/teams/teams.module';
 import { StorageModule } from './modules/storage/storage.module';
+import { DeveloperModule } from './modules/developer/developer.module';
 import { JwtAuthGuard } from './common/guards';
 import { appConfig, jwtConfig, throttleConfig, supabaseConfig, cacheConfig, loggerConfig, validateEnv, } from './config';
 
@@ -149,6 +150,7 @@ import { appConfig, jwtConfig, throttleConfig, supabaseConfig, cacheConfig, logg
     DashboardModule,
     TeamsModule,
     StorageModule,
+    DeveloperModule,
   ],
   
   providers: [
