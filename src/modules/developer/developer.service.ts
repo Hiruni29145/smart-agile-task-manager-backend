@@ -318,29 +318,31 @@ export class DeveloperService {
             myStoryPoints
         };
 
-        const recentActivity = [
-            {
-                id: 1,
-                user: 'System',
-                action: 'assigned task',
-                target: focusTask ? focusTask.title : 'New task',
-                timeAgo: '2h'
+        const auditLogs = await this.prisma.auditLog.findMany({
+            where: {
+                userId: userId,
+                deletedAt: null
             },
-            {
-                id: 2,
-                user: 'Admin',
-                action: 'commented on',
-                target: 'Refactor billing webhook',
-                timeAgo: '12m'
-            },
-            {
-                id: 3,
-                user: 'AI Estimator',
-                action: 'predicted',
-                target: 'Push notification service worker',
-                timeAgo: '24m'
-            }
-        ];
+            orderBy: { createdAt: 'desc' },
+            take: 3,
+            include: { user: true }
+        });
+
+        const getTimeAgo = (date: Date) => {
+            const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+            if (seconds < 60) return `${Math.max(1, seconds)}s`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+            return `${Math.floor(seconds / 86400)}d`;
+        };
+
+        const recentActivity = auditLogs.map(log => ({
+            id: Number(log.id),
+            user: log.user ? `${log.user.firstName} ${log.user.lastName}`.trim() : 'System',
+            action: log.action.toLowerCase().replace('_', ' '),
+            target: `${log.entity} ${log.entityId ? `#${log.entityId}` : ''}`.trim(),
+            timeAgo: getTimeAgo(log.createdAt)
+        }));
 
         return new DeveloperMainDashboardDto({
             currentFocus,
