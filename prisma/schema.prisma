@@ -58,6 +58,7 @@ model User {
   projects      Project[]
   assignedTasks Task[]         @relation("TaskAssignee")
   createdTasks  Task[]         @relation("TaskCreator")
+  aiEstimations AiEstimation[]
 
   @@index([email])
   @@index([email, status])
@@ -302,4 +303,31 @@ model Task {
   @@index([status])
   @@index([priority])
   @@map("tasks")
+}
+
+// ===========================================
+// AI Center
+// ===========================================
+
+model AiEstimation {
+  id              Int          @id @default(autoincrement())
+  taskTitle       String       @map("task_title")
+  description     String?      @db.Text
+  priority        String       @default("Medium")
+  taskType        String       @default("Feature") @map("task_type")
+  estimatedHours  Float        @map("estimated_hours")
+  storyPoints     Float        @map("story_points")
+  complexity      String
+  confidenceScore Float        @map("confidence_score")
+
+  createdById     String       @map("created_by_id")
+  createdBy       User         @relation(fields: [createdById], references: [id])
+
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  deletedAt       DateTime?    @map("deleted_at")
+
+  @@index([createdById])
+  @@index([deletedAt])
+  @@map("ai_center")
 }

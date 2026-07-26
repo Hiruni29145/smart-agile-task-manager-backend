@@ -23,6 +23,7 @@ import { StorageModule } from './modules/storage/storage.module';
 import { DeveloperModule } from './modules/developer/developer.module';
 import { JwtAuthGuard } from './common/guards';
 import { appConfig, jwtConfig, throttleConfig, supabaseConfig, cacheConfig, loggerConfig, validateEnv, } from './config';
+import { AiCenterModule } from './modules/ai-center/ai-center.module';
 
 @Module({
   imports: [
@@ -151,6 +152,7 @@ import { appConfig, jwtConfig, throttleConfig, supabaseConfig, cacheConfig, logg
     TeamsModule,
     StorageModule,
     DeveloperModule,
+    AiCenterModule,
   ],
   
   providers: [
