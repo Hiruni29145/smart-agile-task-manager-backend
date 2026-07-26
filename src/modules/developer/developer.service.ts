@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { GetMyTasksQueryDto, KanbanBoardResponseDto, UpdateTaskStatusDto, DeveloperSprintDashboardDto, DeveloperMainDashboardDto } from './dto';
+import { GetMyTasksQueryDto, KanbanBoardResponseDto, UpdateTaskStatusDto, DeveloperSprintDashboardDto, DeveloperMainDashboardDto, DeveloperProjectListResponseDto } from './dto';
 import { TaskListResponseDto, TaskResponseDto } from '../tasks/dto';
 import { ErrorCodes } from '../../common/constants';
 
@@ -349,5 +349,32 @@ export class DeveloperService {
             sprintStatus,
             recentActivity
         });
+    }
+
+    async getActiveProjects(userId: string): Promise<DeveloperProjectListResponseDto> {
+        const projects = await this.prisma.project.findMany({
+            where: {
+                deletedAt: null,
+                sprints: {
+                    some: {
+                        status: 'ACTIVE',
+                        deletedAt: null,
+                        tasks: {
+                            some: {
+                                assigneeId: userId,
+                                deletedAt: null,
+                            }
+                        }
+                    }
+                }
+            },
+            select: {
+                id: true,
+                name: true
+            },
+            orderBy: { name: 'asc' }
+        });
+
+        return new DeveloperProjectListResponseDto({ items: projects });
     }
 }

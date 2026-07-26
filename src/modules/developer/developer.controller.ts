@@ -1,6 +1,6 @@
 import { Controller, Get, Query, UseGuards, Patch, Param, Body, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { DeveloperService } from './developer.service';
-import { GetMyTasksQueryDto, KanbanBoardResponseDto, UpdateTaskStatusDto, DeveloperSprintDashboardDto, DeveloperMainDashboardDto } from './dto';
+import { GetMyTasksQueryDto, KanbanBoardResponseDto, UpdateTaskStatusDto, DeveloperSprintDashboardDto, DeveloperMainDashboardDto, DeveloperProjectListResponseDto } from './dto';
 import { TaskListResponseDto } from '../tasks/dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -59,5 +59,13 @@ export class DeveloperController {
     ): Promise<DeveloperMainDashboardDto> {
         const parsedProjectId = projectId ? parseInt(projectId, 10) : undefined;
         return this.developerService.getMainDashboard(user.id, parsedProjectId);
+    }
+
+    @Get('projects/active')
+    @Roles(UserRole.DEVELOPER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+    async getActiveProjects(
+        @CurrentUser() user: User,
+    ): Promise<DeveloperProjectListResponseDto> {
+        return this.developerService.getActiveProjects(user.id);
     }
 }
