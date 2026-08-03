@@ -48,8 +48,6 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/src/modules/email/templates ./dist/modules/email/templates
 
 
-COPY --from=builder /app/src/keys ./src/keys
-
 # Set ownership to non-root user
 RUN chown -R nestjs:nodejs /app
 
