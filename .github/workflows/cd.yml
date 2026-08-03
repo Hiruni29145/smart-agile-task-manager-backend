@@ -43,5 +43,10 @@ jobs:
             # Wait 10 seconds for the container to start up properly
             sleep 10
             
-            # Apply new database migrations inside the running container
-            docker exec hiruni-backend npx prisma migrate deploy
+            if docker ps --format '{{.Names}}' | grep -q '^hiruni-backend$'; then
+                docker exec hiruni-backend npx prisma migrate deploy
+            else
+                echo "Container failed to start."
+                docker compose logs
+                exit 1
+            fi
