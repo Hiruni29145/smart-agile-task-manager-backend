@@ -39,3 +39,15 @@ jobs:
             
             # Build and deploy the container using Docker Compose
             docker compose up -d --build
+            
+            # Wait for container to start
+            sleep 10
+            
+            # Run migrations after the container is up
+            if docker ps --format '{{.Names}}' | grep -q '^hiruni-backend$'; then
+                docker exec hiruni-backend npx prisma migrate deploy
+            else
+                echo "Container failed to start."
+                docker compose logs
+                exit 1
+            fi

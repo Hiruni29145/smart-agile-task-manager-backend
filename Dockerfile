@@ -37,12 +37,18 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # Install production dependencies only
-RUN npm ci --only=production && \
-    npx prisma@6.19.2 generate && \
+RUN npm ci --omit=dev && \
     npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
+
+# Copy Prisma schema
+COPY --from=builder /app/prisma ./prisma
+
+# Copy generated Prisma Client
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Copy email templates
 COPY --from=builder /app/src/modules/email/templates ./dist/modules/email/templates
@@ -62,4 +68,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/v1/health/live || exit 1
 
 # Start the application
-CMD npx prisma migrate deploy && node dist/src/main.js
+CMD ["node", "dist/src/main.js"]
