@@ -62,4 +62,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/v1/health/live || exit 1
 
 # Start the application
-CMD ["node", "dist/src/main.js"]
+CMD npx prisma migrate deploy && node dist/src/main.js
