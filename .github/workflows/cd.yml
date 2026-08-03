@@ -1,0 +1,56 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build and Deploy directly on EC2
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Copy Repository to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "."
+          target: "~/smart-agile-ai-flow-backend"
+
+      - name: Build and Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/smart-agile-ai-flow-backend
+            
+            # Build Docker image directly on EC2
+            docker build -t smart-agile-backend-image:latest .
+            
+            # Stop existing container (ignore error if it doesn't exist)
+            docker stop smart-agile-backend || true
+            docker rm smart-agile-backend || true
+            
+            # Run new container
+            # We assume your .env file is safely stored at ~/.env on the EC2 server
+            docker run -d --name smart-agile-backend -p 3000:3000 \
+              --env-file ~/.env \
+              smart-agile-backend-image:latest
+            
+            # Wait 10 seconds for the container to start up properly
+            sleep 10
+            
+            # Apply new database migrations inside the running container
+            docker exec smart-agile-backend npx prisma migrate deploy
