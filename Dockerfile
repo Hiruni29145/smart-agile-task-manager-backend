@@ -41,21 +41,17 @@ RUN npm ci --omit=dev && \
     npm cache clean --force
 
 # Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
+COPY --chown=nestjs:nodejs --from=builder /app/dist ./dist
 
 # Copy Prisma schema
-COPY --from=builder /app/prisma ./prisma
+COPY --chown=nestjs:nodejs --from=builder /app/prisma ./prisma
 
 # Copy generated Prisma Client
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --chown=nestjs:nodejs --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --chown=nestjs:nodejs --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Copy email templates
-COPY --from=builder /app/src/modules/email/templates ./dist/modules/email/templates
-
-
-# Set ownership to non-root user
-RUN chown -R nestjs:nodejs /app
+COPY --chown=nestjs:nodejs --from=builder /app/src/modules/email/templates ./dist/modules/email/templates
 
 # Switch to non-root user
 USER nestjs
