@@ -38,7 +38,7 @@ COPY prisma ./prisma/
 
 # Install production dependencies only
 RUN npm ci --only=production && \
-    npx prisma generate && \
+    npx prisma@6.19.2 generate && \
     npm cache clean --force
 
 # Copy built application from builder stage
